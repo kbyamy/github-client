@@ -1,22 +1,24 @@
 package com.kbyamy.githubclient.api
 
+import com.kbyamy.githubclient.BuildConfig
 import com.kbyamy.githubclient.data.UserSearchResponse
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.logging.HttpLoggingInterceptor
 import okhttp3.logging.HttpLoggingInterceptor.Level
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
-import retrofit2.http.Header
 import retrofit2.http.Query
+
 
 interface GithubApiService {
 
     @GET("search/users?")
     suspend fun searchUsers(
-        @Header("Authorization") token: String,
         @Query("q") query: String,
         @Query("page") page: Int,
         @Query("per_page") perPage: Int
@@ -32,6 +34,15 @@ interface GithubApiService {
             val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
 
             val client = OkHttpClient.Builder()
+                .addInterceptor(Interceptor { chain ->
+                    val request: Request = chain
+                        .request()
+                        .newBuilder()
+                        .addHeader("Accept", "application/vnd.github.v3+json")
+                        .addHeader("Authorization", BuildConfig.GITHUB_API_TOKEN)
+                        .build()
+                    chain.proceed(request)
+                })
                 .addInterceptor(interceptor)
                 .build()
 
