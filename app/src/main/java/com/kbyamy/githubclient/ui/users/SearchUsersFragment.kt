@@ -1,0 +1,172 @@
+package com.kbyamy.githubclient.ui.users
+
+import android.content.Context
+import android.os.Bundle
+import android.view.*
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.paging.LoadState
+import androidx.paging.PagingData
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.RecyclerView
+import com.kbyamy.githubclient.common.util.Injection
+import com.kbyamy.githubclient.data.model.User
+import com.kbyamy.githubclient.databinding.FragmentSearchUsersBinding
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import timber.log.Timber
+
+class SearchUsersFragment : Fragment() {
+
+    private var _binding: FragmentSearchUsersBinding? = null
+    private val binding get() = _binding!!
+
+    companion object {
+        fun newInstance() = SearchUsersFragment()
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentSearchUsersBinding.inflate(inflater, container, false)
+
+        val viewModel = ViewModelProvider(
+            this,
+            Injection.provideViewModelFactory(this)
+        )[SearchUsersViewModel::class.java]
+
+        val decoration = DividerItemDecoration(context, DividerItemDecoration.VERTICAL)
+        binding.recyclerView.addItemDecoration(decoration)
+
+        binding.bindState(
+            uiState = viewModel.state,
+            pagingData = viewModel.pagingDataFlow,
+            uiActions = viewModel.accept)
+
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    private fun FragmentSearchUsersBinding.bindState(
+        uiState: StateFlow<UiState>,
+        pagingData: Flow<PagingData<User>>,
+        uiActions: (UiAction) -> Unit
+    ) {
+        val adapter = UsersAdapter()
+        recyclerView.adapter = adapter.withLoadStateHeaderAndFooter(
+            header = UsersLoadStateAdapter { adapter.retry() },
+            footer = UsersLoadStateAdapter { adapter.retry() }
+        )
+
+        bindSearch(
+            uiState = uiState,
+            onQueryChanged = uiActions
+        )
+
+        bindList(
+            adapter = adapter,
+            uiState = uiState,
+            pagingData = pagingData,
+            onScrollChanged = uiActions
+        )
+    }
+
+    private fun FragmentSearchUsersBinding.bindSearch(
+        uiState: StateFlow<UiState>,
+        onQueryChanged: (UiAction.Search) -> Unit
+    ) {
+        editText.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_GO) {
+                updateRepoListFromInput(onQueryChanged)
+                true
+            } else {
+                false
+            }
+        }
+
+        editText.setOnKeyListener { _, keyCode, event ->
+            if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
+                updateRepoListFromInput(onQueryChanged)
+                hideKeyboard()
+                true
+            } else {
+                false
+            }
+        }
+
+        lifecycleScope.launch {
+            uiState
+                .map { it.query }
+                .distinctUntilChanged()
+                .collect(editText::setText)
+        }
+    }
+
+    private fun FragmentSearchUsersBinding.updateRepoListFromInput(onQueryChanged: (UiAction.Search) -> Unit) {
+        editText.text.trim().let {
+            if (it.isNotEmpty()) {
+                recyclerView.scrollToPosition(0)
+                onQueryChanged(UiAction.Search(query = it.toString()))
+            }
+        }
+    }
+
+    private fun FragmentSearchUsersBinding.bindList(
+        adapter: UsersAdapter,
+        uiState: StateFlow<UiState>,
+        pagingData: Flow<PagingData<User>>,
+        onScrollChanged: (UiAction.Scroll) -> Unit
+    ) {
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                if (dy != 0) onScrollChanged(UiAction.Scroll(currentQuery = uiState.value.query))
+            }
+        })
+
+        val notLoading = adapter.loadStateFlow.distinctUntilChangedBy {
+            it.source.refresh
+        }.map {
+            it.source.refresh is LoadState.NotLoading
+        }
+
+        val hasNotScrolledForCurrentSearch = uiState.map {
+            it.hasNotScrolledForCurrentSearch
+        }.distinctUntilChanged()
+
+        val shouldScrollToTop = combine(
+            notLoading,
+            hasNotScrolledForCurrentSearch,
+            Boolean::and
+        ).distinctUntilChanged()
+
+        lifecycleScope.launch {
+            pagingData.collectLatest(adapter::submitData)
+        }
+
+        lifecycleScope.launch {
+            shouldScrollToTop.collect { shouldScroll ->
+                if (shouldScroll) recyclerView.scrollToPosition(0)
+            }
+        }
+    }
+
+    private fun hideKeyboard() {
+        if (activity?.currentFocus != null) {
+            val imm =
+                activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
+            imm?.hideSoftInputFromWindow(
+                activity?.currentFocus!!.windowToken,
+                InputMethodManager.HIDE_NOT_ALWAYS
+            )
+        }
+    }
+
+}

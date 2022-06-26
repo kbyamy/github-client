@@ -2,8 +2,8 @@ package com.kbyamy.githubclient.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import androidx.lifecycle.ViewModelProvider
 import com.kbyamy.githubclient.R
+import com.kbyamy.githubclient.ui.users.SearchUsersFragment
 import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {

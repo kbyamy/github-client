@@ -24,10 +24,6 @@ class GithubRepository(
         ).flow
     }
 
-//    fun getUserRepositoryResultStream(query: String): Flow<PagingData<Repository>> {
-//        Timber.d("New query: $query")
-//    }
-
     companion object {
         const val NETWORK_PAGE_SIZE = 30
     }

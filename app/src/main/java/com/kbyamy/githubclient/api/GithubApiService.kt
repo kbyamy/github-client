@@ -25,7 +25,7 @@ interface GithubApiService {
     ): UserSearchResponse
 
     companion object {
-        private const val BASE_URL = "https://api/github.com/"
+        private const val BASE_URL = "https://api.github.com/"
 
         fun create(): GithubApiService {
             val interceptor = HttpLoggingInterceptor()
