@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/searchUsersFragment">
+
+    <fragment
+        android:id="@+id/searchUsersFragment"
+        android:name="com.kbyamy.githubclient.ui.users.SearchUsersFragment"
+        android:label="fragment_search_users"
+        tools:layout="@layout/fragment_search_users">
+        <action
+            android:id="@+id/action_searchUsersFragment_to_userRepositoriesFragment"
+            app:destination="@id/userRepositoriesFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/userRepositoriesFragment"
+        android:name="com.kbyamy.githubclient.ui.users.UserRepositoriesFragment"
+        android:label="UserRepositoriesFragment">
+
+        <argument
+            android:name="userId"
+            app:argType="string" />
+
+    </fragment>
+</navigation>

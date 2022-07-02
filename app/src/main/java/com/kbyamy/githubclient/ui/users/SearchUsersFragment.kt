@@ -8,10 +8,12 @@ import android.view.inputmethod.InputMethodManager
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.RecyclerView
+import com.kbyamy.githubclient.R
 import com.kbyamy.githubclient.common.util.Injection
 import com.kbyamy.githubclient.data.model.User
 import com.kbyamy.githubclient.databinding.FragmentSearchUsersBinding
@@ -45,7 +47,8 @@ class SearchUsersFragment : Fragment() {
         binding.bindState(
             uiState = viewModel.state,
             pagingData = viewModel.pagingDataFlow,
-            uiActions = viewModel.accept)
+            uiActions = viewModel.accept
+        )
 
         return binding.root
     }
@@ -56,11 +59,17 @@ class SearchUsersFragment : Fragment() {
     }
 
     private fun FragmentSearchUsersBinding.bindState(
-        uiState: StateFlow<UiState>,
+        uiState: StateFlow<SearchUsersUiState>,
         pagingData: Flow<PagingData<User>>,
-        uiActions: (UiAction) -> Unit
+        uiActions: (SearchUsersUiAction) -> Unit
     ) {
-        val adapter = UsersAdapter()
+        val adapter = UsersAdapter(UserViewHolder.OnItemClickEvent {
+            Timber.d("::: OnItemClickEvent user is ${it.login}")
+            val action = SearchUsersFragmentDirections
+                .actionSearchUsersFragmentToUserRepositoriesFragment(it.login)
+            findNavController().navigate(action)
+        })
+
         recyclerView.adapter = adapter.withLoadStateHeaderAndFooter(
             header = UsersLoadStateAdapter { adapter.retry() },
             footer = UsersLoadStateAdapter { adapter.retry() }
@@ -80,8 +89,8 @@ class SearchUsersFragment : Fragment() {
     }
 
     private fun FragmentSearchUsersBinding.bindSearch(
-        uiState: StateFlow<UiState>,
-        onQueryChanged: (UiAction.Search) -> Unit
+        uiState: StateFlow<SearchUsersUiState>,
+        onQueryChanged: (SearchUsersUiAction.Search) -> Unit
     ) {
         editText.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_GO) {
@@ -110,24 +119,28 @@ class SearchUsersFragment : Fragment() {
         }
     }
 
-    private fun FragmentSearchUsersBinding.updateRepoListFromInput(onQueryChanged: (UiAction.Search) -> Unit) {
+    private fun FragmentSearchUsersBinding.updateRepoListFromInput(
+        onQueryChanged: (SearchUsersUiAction.Search) -> Unit
+    ) {
         editText.text.trim().let {
             if (it.isNotEmpty()) {
                 recyclerView.scrollToPosition(0)
-                onQueryChanged(UiAction.Search(query = it.toString()))
+                onQueryChanged(SearchUsersUiAction.Search(query = it.toString()))
             }
         }
     }
 
     private fun FragmentSearchUsersBinding.bindList(
         adapter: UsersAdapter,
-        uiState: StateFlow<UiState>,
+        uiState: StateFlow<SearchUsersUiState>,
         pagingData: Flow<PagingData<User>>,
-        onScrollChanged: (UiAction.Scroll) -> Unit
+        onScrollChanged: (SearchUsersUiAction.Scroll) -> Unit
     ) {
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                if (dy != 0) onScrollChanged(UiAction.Scroll(currentQuery = uiState.value.query))
+                if (dy != 0) onScrollChanged(SearchUsersUiAction.Scroll(
+                    currentQuery = uiState.value.query
+                ))
             }
         })
 
