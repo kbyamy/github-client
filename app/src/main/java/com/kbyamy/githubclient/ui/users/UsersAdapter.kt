@@ -24,7 +24,7 @@ class UsersAdapter(
         private val REPO_COMPARATOR = object : DiffUtil.ItemCallback<User>() {
 
             override fun areItemsTheSame(oldItem: User, newItem: User): Boolean =
-                oldItem.login == newItem.login
+                oldItem.userId == newItem.userId
 
             override fun areContentsTheSame(oldItem: User, newItem: User): Boolean =
                 oldItem == newItem

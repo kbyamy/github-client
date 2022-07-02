@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
@@ -16,9 +17,9 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import com.kbyamy.githubclient.common.util.Injection
 import com.kbyamy.githubclient.data.model.Repository
 import com.kbyamy.githubclient.data.model.User
-import com.kbyamy.githubclient.data.model.UserDetail
 import com.kbyamy.githubclient.databinding.FragmentSearchUsersBinding
 import com.kbyamy.githubclient.databinding.FragmentUserRepositoriesBinding
+import com.kbyamy.githubclient.ui.ViewModelFactory
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -41,17 +42,24 @@ class UserRepositoriesFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        Timber.d("::: navigation args.userId is ${args.userId}")
         _binding = FragmentUserRepositoriesBinding.inflate(inflater, container, false)
+
+        val bundle = Bundle()
+        bundle.putString("bundle_key_userId", args.userId)
 
         val viewModel = ViewModelProvider(
             this,
-            Injection.provideViewModelFactory(this)
+            Injection.provideViewModelFactory(this, bundle)
         )[UserRepositoriesViewModel::class.java]
-
-        Timber.d("::: navigation args.userId is ${args.userId}")
 
         val decoration = DividerItemDecoration(context, DividerItemDecoration.VERTICAL)
         binding.recyclerView.addItemDecoration(decoration)
+
+        viewModel.userDetail.observe(viewLifecycleOwner, Observer {
+            binding.userDetailView.userNameTextView.text = it.userId
+            binding.userDetailView.fullNameTextView.text = it.name
+        })
 
 //        binding.bindState(
 //            uiState = viewModel.state,
@@ -59,7 +67,7 @@ class UserRepositoriesFragment : Fragment() {
 //            uiActions = viewModel.accept
 //        )
 
-        Observer<UserDetail> {
+        Observer<User> {
             updateUserDetailView(it)
         }.also {
             viewModel.userDetail.observe(viewLifecycleOwner, it)
@@ -73,9 +81,9 @@ class UserRepositoriesFragment : Fragment() {
         _binding = null
     }
 
-    private fun updateUserDetailView(user: UserDetail) {
+    private fun updateUserDetailView(user: User) {
         Picasso.get().load(user.avatar_url).into(binding.userDetailView.iconImageView)
-        binding.userDetailView.userNameTextView.text = user.login
+        binding.userDetailView.userNameTextView.text = user.userId
         binding.userDetailView.fullNameTextView.text = user.name
         binding.userDetailView.followingTextView.text = user.following.toString()
         binding.userDetailView.followerTextView.text = user.followers.toString()

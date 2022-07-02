@@ -13,7 +13,6 @@ import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.RecyclerView
-import com.kbyamy.githubclient.R
 import com.kbyamy.githubclient.common.util.Injection
 import com.kbyamy.githubclient.data.model.User
 import com.kbyamy.githubclient.databinding.FragmentSearchUsersBinding
@@ -25,10 +24,6 @@ class SearchUsersFragment : Fragment() {
 
     private var _binding: FragmentSearchUsersBinding? = null
     private val binding get() = _binding!!
-
-    companion object {
-        fun newInstance() = SearchUsersFragment()
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -64,9 +59,9 @@ class SearchUsersFragment : Fragment() {
         uiActions: (SearchUsersUiAction) -> Unit
     ) {
         val adapter = UsersAdapter(UserViewHolder.OnItemClickEvent {
-            Timber.d("::: OnItemClickEvent user is ${it.login}")
+            Timber.d("::: OnItemClickEvent user is ${it.userId}")
             val action = SearchUsersFragmentDirections
-                .actionSearchUsersFragmentToUserRepositoriesFragment(it.login)
+                .actionSearchUsersFragmentToUserRepositoriesFragment(it.userId)
             findNavController().navigate(action)
         })
 

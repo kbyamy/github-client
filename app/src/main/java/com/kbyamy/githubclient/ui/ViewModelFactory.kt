@@ -1,5 +1,6 @@
 package com.kbyamy.githubclient.ui
 
+import android.os.Bundle
 import androidx.lifecycle.AbstractSavedStateViewModelFactory
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -11,10 +12,11 @@ import java.lang.IllegalArgumentException
 
 class ViewModelFactory(
     owner: SavedStateRegistryOwner,
-    private val repository: GithubRepository
-) : AbstractSavedStateViewModelFactory(owner, null) {
+    private val defaultArgs: Bundle? = null,
+    private val repository: GithubRepository,
+) : AbstractSavedStateViewModelFactory(owner, defaultArgs) {
 
-    override fun <T : ViewModel?> create(
+    override fun <T : ViewModel> create(
         key: String,
         modelClass: Class<T>,
         handle: SavedStateHandle

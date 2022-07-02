@@ -1,7 +1,9 @@
 package com.kbyamy.githubclient.api
 
 import com.kbyamy.githubclient.BuildConfig
+import com.kbyamy.githubclient.data.RepositoriesResponse
 import com.kbyamy.githubclient.data.UserSearchResponse
+import com.kbyamy.githubclient.data.model.User
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.Interceptor
@@ -9,9 +11,11 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.logging.HttpLoggingInterceptor
 import okhttp3.logging.HttpLoggingInterceptor.Level
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 
@@ -23,6 +27,18 @@ interface GithubApiService {
         @Query("page") page: Int,
         @Query("per_page") perPage: Int
     ): UserSearchResponse
+
+    @GET("users/{user}")
+    suspend fun getUserDetail(
+        @Path("user") user: String
+    ): Response<User>
+
+    @GET("search/repositories?")
+    suspend fun searchRepositories(
+        @Query("q") query: String,
+        @Query("page") page: Int,
+        @Query("per_page") perPage: Int
+    ): RepositoriesResponse
 
     companion object {
         private const val BASE_URL = "https://api.github.com/"

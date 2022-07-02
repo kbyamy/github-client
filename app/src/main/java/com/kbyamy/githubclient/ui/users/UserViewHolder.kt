@@ -18,7 +18,7 @@ class UserViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
     fun bind(user: User, clickListener: (User) -> Unit) {
         Picasso.get().load(user.avatar_url).into(iconImageView)
-        nameTextView.text = user.login
+        nameTextView.text = user.userId
         itemView.setOnClickListener { clickListener(user) }
     }
 

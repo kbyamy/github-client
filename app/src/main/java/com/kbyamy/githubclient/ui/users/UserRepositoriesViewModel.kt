@@ -1,26 +1,21 @@
 package com.kbyamy.githubclient.ui.users
 
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.kbyamy.githubclient.data.GithubRepository
 import com.kbyamy.githubclient.data.model.Repository
 import com.kbyamy.githubclient.data.model.User
-import com.kbyamy.githubclient.data.model.UserDetail
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class UserRepositoriesViewModel(
     private val repository: GithubRepository,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    val userDetail: MutableLiveData<UserDetail> by lazy {
-        MutableLiveData<UserDetail>()
-    }
+    lateinit var userDetail: LiveData<User>
 
     val state: StateFlow<UserRepositoriesUiState>
 
@@ -29,6 +24,14 @@ class UserRepositoriesViewModel(
     val accept: (UserRepositoriesUiAction) -> Unit
 
     init {
+        val userId = savedStateHandle.get<String>(key = "bundle_key_userId")
+        Timber.d("::: bundle_key_userId is $userId")
+        userId?.let {
+            repository.getUserDetail(userId).asLiveData().let {
+                userDetail = it
+            }
+        }
+
         val initialQuery: String = savedStateHandle[LAST_REPOSITORY_QUERY] ?: DEFAULT_QUERY
         val lastQueryScrolled: String = savedStateHandle[LAST_QUERY_SCROLLED] ?: DEFAULT_QUERY
         val actionStateFlow = MutableSharedFlow<UserRepositoriesUiAction>()
