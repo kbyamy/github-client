@@ -1,4 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="text_size_normal">16sp</dimen>
+    // Image Size
+    <dimen name="icon_image_size">96dp</dimen>
+
+    // Text Size
+    <dimen name="text_size_large">24sp</dimen>
+    <dimen name="text_size_medium">16sp</dimen>
+    <dimen name="text_size_small">14sp</dimen>
+
+    // Margin Size
+    <dimen name="margin_size_large">16dp</dimen>
+    <dimen name="margin_size_medium">8dp</dimen>
+    <dimen name="margin_size_small">4dp</dimen>
 </resources>
