@@ -26,13 +26,14 @@ class UserRepositoriesViewModel(
     init {
         val userId = savedStateHandle.get<String>(key = "bundle_key_userId")
         Timber.d("::: bundle_key_userId is $userId")
+
         userId?.let {
             repository.getUserDetail(userId).asLiveData().let {
                 userDetail = it
             }
         }
 
-        val initialQuery: String = savedStateHandle[LAST_REPOSITORY_QUERY] ?: DEFAULT_QUERY
+        val initialQuery: String = "user:" + savedStateHandle["bundle_key_userId"] ?: DEFAULT_QUERY
         val lastQueryScrolled: String = savedStateHandle[LAST_QUERY_SCROLLED] ?: DEFAULT_QUERY
         val actionStateFlow = MutableSharedFlow<UserRepositoriesUiAction>()
 
@@ -52,7 +53,10 @@ class UserRepositoriesViewModel(
             .onStart { emit(UserRepositoriesUiAction.Scroll(currentQuery = lastQueryScrolled)) }
 
         pagingDataFlow = searches
-            .flatMapLatest { searchRepository(it.query) }
+            .flatMapLatest {
+                Timber.d("::: pagingDataFlow = searches query = ${it.query}")
+                searchRepositories(it.query)
+            }
             .cachedIn(viewModelScope)
 
         state = combine(
@@ -76,12 +80,12 @@ class UserRepositoriesViewModel(
         }
     }
 
-    private fun searchRepository(query: String): Flow<PagingData<Repository>> =
+    private fun searchRepositories(query: String): Flow<PagingData<Repository>> =
         repository.getSearchRepositoryStream(query)
 }
 
 sealed class UserRepositoriesUiAction {
-    data class Search(val query: String) : SearchUsersUiAction()
+    data class Search(val query: String) : UserRepositoriesUiAction()
     data class Scroll(val currentQuery: String) : UserRepositoriesUiAction()
 }
 

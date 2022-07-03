@@ -1,30 +1,24 @@
 package com.kbyamy.githubclient.ui.users
 
 import android.os.Bundle
-import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.EditorInfo
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
+import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.RecyclerView
 import com.kbyamy.githubclient.common.util.Injection
 import com.kbyamy.githubclient.data.model.Repository
 import com.kbyamy.githubclient.data.model.User
-import com.kbyamy.githubclient.databinding.FragmentSearchUsersBinding
 import com.kbyamy.githubclient.databinding.FragmentUserRepositoriesBinding
-import com.kbyamy.githubclient.ui.ViewModelFactory
 import com.squareup.picasso.Picasso
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -33,10 +27,7 @@ class UserRepositoriesFragment : Fragment() {
     private val args: UserRepositoriesFragmentArgs by navArgs()
     private var _binding: FragmentUserRepositoriesBinding? = null
     private val binding get() = _binding!!
-
-    companion object {
-        fun newInstance() = SearchUsersFragment()
-    }
+    private lateinit var viewModel: UserRepositoriesViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -48,18 +39,13 @@ class UserRepositoriesFragment : Fragment() {
         val bundle = Bundle()
         bundle.putString("bundle_key_userId", args.userId)
 
-        val viewModel = ViewModelProvider(
+        viewModel = ViewModelProvider(
             this,
             Injection.provideViewModelFactory(this, bundle)
         )[UserRepositoriesViewModel::class.java]
 
         val decoration = DividerItemDecoration(context, DividerItemDecoration.VERTICAL)
         binding.recyclerView.addItemDecoration(decoration)
-
-        viewModel.userDetail.observe(viewLifecycleOwner, Observer {
-            binding.userDetailView.userNameTextView.text = it.userId
-            binding.userDetailView.fullNameTextView.text = it.name
-        })
 
 //        binding.bindState(
 //            uiState = viewModel.state,
@@ -69,6 +55,13 @@ class UserRepositoriesFragment : Fragment() {
 
         Observer<User> {
             updateUserDetailView(it)
+//            Timber.d("::: observe user go query ${it.userId}")
+//            UserRepositoriesUiAction.Search(query = it.userId)
+            binding.bindState(
+                uiState = viewModel.state,
+                pagingData = viewModel.pagingDataFlow,
+                uiActions = viewModel.accept
+            )
         }.also {
             viewModel.userDetail.observe(viewLifecycleOwner, it)
         }
@@ -82,85 +75,96 @@ class UserRepositoriesFragment : Fragment() {
     }
 
     private fun updateUserDetailView(user: User) {
-        Picasso.get().load(user.avatar_url).into(binding.userDetailView.iconImageView)
+        Picasso.get().load(user.avatarUrl).into(binding.userDetailView.iconImageView)
         binding.userDetailView.userNameTextView.text = user.userId
         binding.userDetailView.fullNameTextView.text = user.name
         binding.userDetailView.followingTextView.text = user.following.toString()
         binding.userDetailView.followerTextView.text = user.followers.toString()
     }
 
-//    private fun FragmentUserRepositoriesBinding.bindState(
-//        uiState: StateFlow<UserRepositoriesUiState>,
-//        pagingData: Flow<PagingData<Repository>>,
-//        uiActions: (UserRepositoriesUiAction) -> Unit
-//    ) {
-//        val adapter = RepositoriesAdapter()
-//        recyclerView.adapter = adapter.withLoadStateHeaderAndFooter(
-//            header = UsersLoadStateAdapter { adapter.retry() },
-//            footer = UsersLoadStateAdapter { adapter.retry() }
-//        )
-//
-//        bindSearch(
-//            uiState = uiState,
-//            onQueryChanged = uiActions
-//        )
-//
-//        bindList(
-//            adapter = adapter,
-//            uiState = uiState,
-//            pagingData = pagingData,
-//            onScrollChanged = uiActions
-//        )
-//    }
+    private fun FragmentUserRepositoriesBinding.bindState(
+        uiState: StateFlow<UserRepositoriesUiState>,
+        pagingData: Flow<PagingData<Repository>>,
+        uiActions: (UserRepositoriesUiAction) -> Unit
+    ) {
+        val adapter = RepositoriesAdapter(RepositoryViewHolder.OnItemClickEvent {
+            Timber.d("::: OnItemClickEvent repository is ${it.name}")
+            Timber.d("::: OnItemClickEvent repository url ${it.repositoryUrl}")
+        })
+        recyclerView.adapter = adapter.withLoadStateHeaderAndFooter(
+            header = UsersLoadStateAdapter { adapter.retry() },
+            footer = UsersLoadStateAdapter { adapter.retry() }
+        )
 
-//    private fun FragmentUserRepositoriesBinding.bindLoad(
-//        uiState: StateFlow<UserRepositoriesUiState>,
-//    ) {
-//
-//    }
+        bindSearch(
+            uiState = uiState,
+            onQueryChanged = uiActions
+        )
+
+        bindList(
+            adapter = adapter,
+            uiState = uiState,
+            pagingData = pagingData,
+            onScrollChanged = uiActions
+        )
+    }
 
     private fun FragmentUserRepositoriesBinding.bindSearch(
         uiState: StateFlow<UserRepositoriesUiState>,
         onQueryChanged: (UserRepositoriesUiAction.Search) -> Unit
     ) {
-//        editText.setOnEditorActionListener { _, actionId, _ ->
-//            if (actionId == EditorInfo.IME_ACTION_GO) {
-//                updateRepoListFromInput(onQueryChanged)
-//                true
-//            } else {
-//                false
-//            }
-//        }
+        updateRepoListFromInput(onQueryChanged)
+    }
 
-//        editText.setOnKeyListener { _, keyCode, event ->
-//            if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
-//                updateRepoListFromInput(onQueryChanged)
-//                hideKeyboard()
-//                true
-//            } else {
-//                false
-//            }
-//        }
-
-        lifecycleScope.launch {
-            uiState
-                .map { it.query }
-                .distinctUntilChanged()
-                .collect(userDetailView.userNameTextView::setText)
+    private fun FragmentUserRepositoriesBinding.updateRepoListFromInput(
+        onQueryChanged: (UserRepositoriesUiAction.Search) -> Unit
+    ) {
+        recyclerView.scrollToPosition(0)
+        val query = viewModel.userDetail.value?.userId
+        query?.let {
+            onQueryChanged(UserRepositoriesUiAction.Search(query = it))
         }
     }
 
-//    private fun FragmentUserRepositoriesBinding.updateRepoListFromInput(
-//        onQueryChanged: (UserRepositoriesUiAction.Search) -> Unit
-//    ) {
-//        recyclerView.scrollToPosition(0)
-//        onQueryChanged(UserRepositoriesUiAction.Search(query = it.toString()))
-//        editText.text.trim().let {
-//            if (it.isNotEmpty()) {
-//                recyclerView.scrollToPosition(0)
-//                onQueryChanged(SearchUsersUiAction.Search(query = it.toString()))
-//            }
-//        }
-//    }
+    private fun FragmentUserRepositoriesBinding.bindList(
+        adapter: RepositoriesAdapter,
+        uiState: StateFlow<UserRepositoriesUiState>,
+        pagingData: Flow<PagingData<Repository>>,
+        onScrollChanged: (UserRepositoriesUiAction.Scroll) -> Unit
+    ) {
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                if (dy != 0) onScrollChanged(UserRepositoriesUiAction.Scroll(
+                    currentQuery = uiState.value.query
+                ))
+            }
+        })
+
+        val notLoading = adapter.loadStateFlow.distinctUntilChangedBy {
+            it.source.refresh
+        }.map {
+            it.source.refresh is LoadState.NotLoading
+        }
+
+        val hasNotScrolledForCurrentSearch = uiState.map {
+            it.hasNotScrolledForCurrentSearch
+        }.distinctUntilChanged()
+
+        val shouldScrollToTop = combine(
+            notLoading,
+            hasNotScrolledForCurrentSearch,
+            Boolean::and
+        ).distinctUntilChanged()
+
+        lifecycleScope.launch {
+            pagingData.collectLatest(adapter::submitData)
+        }
+
+        lifecycleScope.launch {
+            shouldScrollToTop.collect { shouldScroll ->
+                if (shouldScroll) recyclerView.scrollToPosition(0)
+            }
+        }
+    }
 
 }

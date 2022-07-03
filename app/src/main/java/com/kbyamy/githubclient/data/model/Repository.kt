@@ -1,7 +1,12 @@
 package com.kbyamy.githubclient.data.model
 
+import com.squareup.moshi.Json
+
 data class Repository(
-    val id: Long,
     val name: String,
-    val html_url: String
+    val language: String?,
+    val stargazers_count: Int,
+    val description: String?,
+    @Json(name = "html_url")
+    val repositoryUrl: String
 )
