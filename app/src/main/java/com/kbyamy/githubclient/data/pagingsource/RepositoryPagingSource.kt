@@ -1,8 +1,9 @@
-package com.kbyamy.githubclient.data
+package com.kbyamy.githubclient.data.pagingsource
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.kbyamy.githubclient.api.GithubApiService
+import com.kbyamy.githubclient.data.GithubApiRepository
 import com.kbyamy.githubclient.data.model.Repository
 import okio.IOException
 import retrofit2.HttpException
@@ -33,7 +34,7 @@ class RepositoryPagingSource(
             val nextKey = if (repositories.isEmpty()) {
                 null
             } else {
-                position + (params.loadSize / GithubRepository.NETWORK_PAGE_SIZE)
+                position + (params.loadSize / GithubApiRepository.NETWORK_PAGE_SIZE)
             }
             LoadResult.Page(
                 data = repositories,

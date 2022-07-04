@@ -1,4 +1,4 @@
-package com.kbyamy.githubclient.ui.users
+package com.kbyamy.githubclient.ui.searchusers
 
 import android.content.Context
 import android.os.Bundle
@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.kbyamy.githubclient.common.util.Injection
 import com.kbyamy.githubclient.data.model.User
 import com.kbyamy.githubclient.databinding.FragmentSearchUsersBinding
+import com.kbyamy.githubclient.ui.common.LoadStateAdapter
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import timber.log.Timber

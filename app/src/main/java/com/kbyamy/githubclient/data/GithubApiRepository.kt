@@ -6,13 +6,15 @@ import androidx.paging.PagingData
 import com.kbyamy.githubclient.api.GithubApiService
 import com.kbyamy.githubclient.data.model.Repository
 import com.kbyamy.githubclient.data.model.User
+import com.kbyamy.githubclient.data.pagingsource.RepositoryPagingSource
+import com.kbyamy.githubclient.data.pagingsource.UserPagingSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import timber.log.Timber
 
-class GithubRepository(
+class GithubApiRepository(
     private val service: GithubApiService
 ) {
 

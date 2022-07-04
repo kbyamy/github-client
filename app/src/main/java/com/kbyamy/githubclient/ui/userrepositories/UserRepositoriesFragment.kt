@@ -1,4 +1,4 @@
-package com.kbyamy.githubclient.ui.users
+package com.kbyamy.githubclient.ui.userrepositories
 
 import android.net.Uri
 import android.os.Bundle
@@ -20,6 +20,11 @@ import com.kbyamy.githubclient.common.util.Injection
 import com.kbyamy.githubclient.data.model.Repository
 import com.kbyamy.githubclient.data.model.User
 import com.kbyamy.githubclient.databinding.FragmentUserRepositoriesBinding
+import com.kbyamy.githubclient.ui.common.LoadStateAdapter
+import com.kbyamy.githubclient.ui.searchusers.BUNDLE_KEY_USER_ID
+import com.kbyamy.githubclient.ui.searchusers.UserRepositoriesUiAction
+import com.kbyamy.githubclient.ui.searchusers.UserRepositoriesUiState
+import com.kbyamy.githubclient.ui.searchusers.UserRepositoriesViewModel
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -131,9 +136,11 @@ class UserRepositoriesFragment : Fragment() {
 
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                if (dy != 0) onScrollChanged(UserRepositoriesUiAction.Scroll(
-                    currentQuery = uiState.value.query
-                ))
+                if (dy != 0) onScrollChanged(
+                    UserRepositoriesUiAction.Scroll(
+                        currentQuery = uiState.value.query
+                    )
+                )
             }
         })
 

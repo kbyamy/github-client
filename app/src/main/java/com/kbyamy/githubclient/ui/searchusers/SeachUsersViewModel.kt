@@ -1,17 +1,17 @@
-package com.kbyamy.githubclient.ui.users
+package com.kbyamy.githubclient.ui.searchusers
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.kbyamy.githubclient.data.GithubRepository
+import com.kbyamy.githubclient.data.GithubApiRepository
 import com.kbyamy.githubclient.data.model.User
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class SearchUsersViewModel(
-    private val repository: GithubRepository,
+    private val repository: GithubApiRepository,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 

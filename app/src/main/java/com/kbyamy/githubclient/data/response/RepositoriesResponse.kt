@@ -1,4 +1,4 @@
-package com.kbyamy.githubclient.data
+package com.kbyamy.githubclient.data.response
 
 import com.kbyamy.githubclient.data.model.Repository
 

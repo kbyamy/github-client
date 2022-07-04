@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/searchUsersFragment"
-        android:name="com.kbyamy.githubclient.ui.users.SearchUsersFragment"
+        android:name="com.kbyamy.githubclient.ui.searchusers.SearchUsersFragment"
         android:label="fragment_search_users"
         tools:layout="@layout/fragment_search_users">
         <action
@@ -16,7 +16,7 @@
     </fragment>
     <fragment
         android:id="@+id/userRepositoriesFragment"
-        android:name="com.kbyamy.githubclient.ui.users.UserRepositoriesFragment"
+        android:name="com.kbyamy.githubclient.ui.userrepositories.UserRepositoriesFragment"
         android:label="UserRepositoriesFragment">
 
         <argument

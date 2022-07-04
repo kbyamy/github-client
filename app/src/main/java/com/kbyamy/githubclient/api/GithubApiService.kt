@@ -1,8 +1,8 @@
 package com.kbyamy.githubclient.api
 
 import com.kbyamy.githubclient.BuildConfig
-import com.kbyamy.githubclient.data.RepositoriesResponse
-import com.kbyamy.githubclient.data.UserSearchResponse
+import com.kbyamy.githubclient.data.response.RepositoriesResponse
+import com.kbyamy.githubclient.data.response.UsersSearchResponse
 import com.kbyamy.githubclient.data.model.User
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -25,7 +25,7 @@ interface GithubApiService {
         @Query("q") query: String,
         @Query("page") page: Int,
         @Query("per_page") perPage: Int
-    ): UserSearchResponse
+    ): UsersSearchResponse
 
     @GET("users/{user}")
     suspend fun getUserDetail(

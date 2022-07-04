@@ -1,4 +1,4 @@
-package com.kbyamy.githubclient.ui.users
+package com.kbyamy.githubclient.ui.userrepositories
 
 import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter

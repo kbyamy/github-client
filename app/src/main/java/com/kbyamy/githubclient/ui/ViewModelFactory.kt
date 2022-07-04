@@ -5,15 +5,15 @@ import androidx.lifecycle.AbstractSavedStateViewModelFactory
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.savedstate.SavedStateRegistryOwner
-import com.kbyamy.githubclient.data.GithubRepository
-import com.kbyamy.githubclient.ui.users.SearchUsersViewModel
-import com.kbyamy.githubclient.ui.users.UserRepositoriesViewModel
+import com.kbyamy.githubclient.data.GithubApiRepository
+import com.kbyamy.githubclient.ui.searchusers.SearchUsersViewModel
+import com.kbyamy.githubclient.ui.searchusers.UserRepositoriesViewModel
 import java.lang.IllegalArgumentException
 
 class ViewModelFactory(
     owner: SavedStateRegistryOwner,
     private val defaultArgs: Bundle? = null,
-    private val repository: GithubRepository,
+    private val repository: GithubApiRepository,
 ) : AbstractSavedStateViewModelFactory(owner, defaultArgs) {
 
     override fun <T : ViewModel> create(

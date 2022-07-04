@@ -1,4 +1,4 @@
-package com.kbyamy.githubclient.ui.users
+package com.kbyamy.githubclient.ui.common
 
 import android.view.ViewGroup
 import androidx.paging.LoadState

@@ -1,4 +1,4 @@
-package com.kbyamy.githubclient.ui.users
+package com.kbyamy.githubclient.ui.searchusers
 
 import android.view.LayoutInflater
 import android.view.View

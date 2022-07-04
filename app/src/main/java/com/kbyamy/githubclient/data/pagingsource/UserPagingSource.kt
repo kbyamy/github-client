@@ -1,9 +1,9 @@
-package com.kbyamy.githubclient.data
+package com.kbyamy.githubclient.data.pagingsource
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.kbyamy.githubclient.api.GithubApiService
-import com.kbyamy.githubclient.data.GithubRepository.Companion.NETWORK_PAGE_SIZE
+import com.kbyamy.githubclient.data.GithubApiRepository.Companion.NETWORK_PAGE_SIZE
 import com.kbyamy.githubclient.data.model.User
 import okio.IOException
 import retrofit2.HttpException
