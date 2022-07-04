@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -66,8 +67,8 @@ class SearchUsersFragment : Fragment() {
         })
 
         recyclerView.adapter = adapter.withLoadStateHeaderAndFooter(
-            header = UsersLoadStateAdapter { adapter.retry() },
-            footer = UsersLoadStateAdapter { adapter.retry() }
+            header = LoadStateAdapter { adapter.retry() },
+            footer = LoadStateAdapter { adapter.retry() }
         )
 
         bindSearch(
@@ -131,6 +132,8 @@ class SearchUsersFragment : Fragment() {
         pagingData: Flow<PagingData<User>>,
         onScrollChanged: (SearchUsersUiAction.Scroll) -> Unit
     ) {
+        retryButton.setOnClickListener { adapter.retry() }
+
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 if (dy != 0) onScrollChanged(SearchUsersUiAction.Scroll(
@@ -162,6 +165,23 @@ class SearchUsersFragment : Fragment() {
         lifecycleScope.launch {
             shouldScrollToTop.collect { shouldScroll ->
                 if (shouldScroll) recyclerView.scrollToPosition(0)
+            }
+        }
+
+        lifecycleScope.launch {
+            adapter.loadStateFlow.collect {
+                // show empty message when search result is empty.
+                val isEmpty = it.refresh is LoadState.NotLoading && adapter.itemCount == 0
+                emptyTextView.isVisible = isEmpty
+                recyclerView.isVisible = !isEmpty
+
+                // show loading indicator.
+                progressBar.isVisible = it.source.refresh is LoadState.Loading
+
+                // show retry when search result is error.
+                val hasError = it.source.refresh is LoadState.Error
+                retryButton.isVisible = hasError
+                recyclerView.isVisible = !hasError
             }
         }
     }

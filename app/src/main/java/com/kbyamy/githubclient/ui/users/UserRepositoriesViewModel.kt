@@ -24,7 +24,7 @@ class UserRepositoriesViewModel(
     val accept: (UserRepositoriesUiAction) -> Unit
 
     init {
-        val userId = savedStateHandle.get<String>(key = "bundle_key_userId")
+        val userId = savedStateHandle.get<String>(BUNDLE_KEY_USER_ID)
         Timber.d("::: bundle_key_userId is $userId")
 
         userId?.let {
@@ -33,7 +33,7 @@ class UserRepositoriesViewModel(
             }
         }
 
-        val initialQuery: String = "user:" + savedStateHandle["bundle_key_userId"] ?: DEFAULT_QUERY
+        val initialQuery: String = ("user:$userId")
         val lastQueryScrolled: String = savedStateHandle[LAST_QUERY_SCROLLED] ?: DEFAULT_QUERY
         val actionStateFlow = MutableSharedFlow<UserRepositoriesUiAction>()
 
@@ -54,7 +54,7 @@ class UserRepositoriesViewModel(
 
         pagingDataFlow = searches
             .flatMapLatest {
-                Timber.d("::: pagingDataFlow = searches query = ${it.query}")
+                Timber.d("::: pagingDataFlow searches query = ${it.query}")
                 searchRepositories(it.query)
             }
             .cachedIn(viewModelScope)
@@ -95,6 +95,6 @@ data class UserRepositoriesUiState(
     val hasNotScrolledForCurrentSearch: Boolean = false
 )
 
+const val BUNDLE_KEY_USER_ID: String = "bundle_key_userId"
 private const val LAST_QUERY_SCROLLED: String = "last_query_scrolled"
-private const val LAST_REPOSITORY_QUERY: String = "last_repository_query"
 private const val DEFAULT_QUERY = ""

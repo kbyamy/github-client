@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.browser.customtabs.CustomTabsIntent
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -39,7 +40,7 @@ class UserRepositoriesFragment : Fragment() {
         _binding = FragmentUserRepositoriesBinding.inflate(inflater, container, false)
 
         val bundle = Bundle()
-        bundle.putString("bundle_key_userId", args.userId)
+        bundle.putString(BUNDLE_KEY_USER_ID, args.userId)
 
         viewModel = ViewModelProvider(
             this,
@@ -49,16 +50,8 @@ class UserRepositoriesFragment : Fragment() {
         val decoration = DividerItemDecoration(context, DividerItemDecoration.VERTICAL)
         binding.recyclerView.addItemDecoration(decoration)
 
-//        binding.bindState(
-//            uiState = viewModel.state,
-//            pagingData = viewModel.pagingDataFlow,
-//            uiActions = viewModel.accept
-//        )
-
         Observer<User> {
             updateUserDetailView(it)
-//            Timber.d("::: observe user go query ${it.userId}")
-//            UserRepositoriesUiAction.Search(query = it.userId)
             binding.bindState(
                 uiState = viewModel.state,
                 pagingData = viewModel.pagingDataFlow,
@@ -94,8 +87,8 @@ class UserRepositoriesFragment : Fragment() {
             intent.launchUrl(requireContext(), Uri.parse(it.repositoryUrl))
         })
         recyclerView.adapter = adapter.withLoadStateHeaderAndFooter(
-            header = UsersLoadStateAdapter { adapter.retry() },
-            footer = UsersLoadStateAdapter { adapter.retry() }
+            header = LoadStateAdapter { adapter.retry() },
+            footer = LoadStateAdapter { adapter.retry() }
         )
 
         bindSearch(
@@ -134,6 +127,8 @@ class UserRepositoriesFragment : Fragment() {
         pagingData: Flow<PagingData<Repository>>,
         onScrollChanged: (UserRepositoriesUiAction.Scroll) -> Unit
     ) {
+        retryButton.setOnClickListener { adapter.retry() }
+
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 if (dy != 0) onScrollChanged(UserRepositoriesUiAction.Scroll(
@@ -165,6 +160,23 @@ class UserRepositoriesFragment : Fragment() {
         lifecycleScope.launch {
             shouldScrollToTop.collect { shouldScroll ->
                 if (shouldScroll) recyclerView.scrollToPosition(0)
+            }
+        }
+
+        lifecycleScope.launch {
+            adapter.loadStateFlow.collect {
+                // show empty message when search result is empty.
+                val isEmpty = it.refresh is LoadState.NotLoading && adapter.itemCount == 0
+                emptyTextView.isVisible = isEmpty
+                recyclerView.isVisible = !isEmpty
+
+                // show loading indicator.
+                progressBar.isVisible = it.source.refresh is LoadState.Loading
+
+                // show retry when search result is error.
+                val hasError = it.source.refresh is LoadState.Error
+                retryButton.isVisible = hasError
+                recyclerView.isVisible = !hasError
             }
         }
     }

@@ -42,7 +42,13 @@ class SearchUsersViewModel(
             .onStart { emit(SearchUsersUiAction.Scroll(currentQuery = lastQueryScrolled)) }
 
         pagingDataFlow = searches
-            .flatMapLatest { searchUser(it.query) }
+            .flatMapLatest {
+                if (it.query.isNotEmpty()) {
+                    searchUsers(it.query)
+                } else {
+                    emptyFlow()
+                }
+            }
             .cachedIn(viewModelScope)
 
         state = combine(
@@ -67,7 +73,7 @@ class SearchUsersViewModel(
 
     }
 
-    private fun searchUser(query: String): Flow<PagingData<User>> =
+    private fun searchUsers(query: String): Flow<PagingData<User>> =
         repository.getSearchUserResultStream(query)
 }
 
