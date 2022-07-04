@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="LargeText" parent="TextAppearance.AppCompat">
+        <item name="android:textSize">@dimen/text_size_large</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="LargeTextBold" parent="LargeText">
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="MediumText" parent="TextAppearance.AppCompat">
+        <item name="android:textSize">@dimen/text_size_medium</item>
+    </style>
+
+    <style name="MediumTextBold" parent="MediumText">
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="SmallText" parent="TextAppearance.AppCompat">
+        <item name="android:textSize">@dimen/text_size_small</item>
+    </style>
+
+    <style name="SmallTextBold" parent="SmallText">
+        <item name="android:textStyle">bold</item>
+    </style>
+
+</resources>

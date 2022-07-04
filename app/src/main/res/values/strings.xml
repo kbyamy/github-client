@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">GithubClient</string>
+    <string name="retry">リトライ</string>
+    <string name="hint_text_search_user">Githubのユーザーを検索</string>
+
+    <string name="label_user_name">ユーザー名</string>
+    <string name="label_full_name">フルネーム</string>
+    <string name="label_follower">フォロワー数</string>
+    <string name="label_following">フォロイー数</string>
+
+    <string name="label_language">開発言語</string>
+    <string name="label_star">スター数</string>
+    <string name="label_description">説明文</string>
 </resources>
