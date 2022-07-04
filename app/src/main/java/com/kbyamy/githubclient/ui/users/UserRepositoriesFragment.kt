@@ -1,9 +1,11 @@
 package com.kbyamy.githubclient.ui.users
 
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -88,8 +90,8 @@ class UserRepositoriesFragment : Fragment() {
         uiActions: (UserRepositoriesUiAction) -> Unit
     ) {
         val adapter = RepositoriesAdapter(RepositoryViewHolder.OnItemClickEvent {
-            Timber.d("::: OnItemClickEvent repository is ${it.name}")
-            Timber.d("::: OnItemClickEvent repository url ${it.repositoryUrl}")
+            val intent = CustomTabsIntent.Builder().build()
+            intent.launchUrl(requireContext(), Uri.parse(it.repositoryUrl))
         })
         recyclerView.adapter = adapter.withLoadStateHeaderAndFooter(
             header = UsersLoadStateAdapter { adapter.retry() },
