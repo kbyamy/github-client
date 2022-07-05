@@ -188,11 +188,11 @@ class SearchUsersFragment : Fragment() {
     }
 
     private fun hideKeyboard() {
-        if (activity?.currentFocus != null) {
+        activity?.currentFocus?.let {
             val imm =
-                activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
+                activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
             imm?.hideSoftInputFromWindow(
-                activity?.currentFocus!!.windowToken,
+                it.windowToken,
                 InputMethodManager.HIDE_NOT_ALWAYS
             )
         }

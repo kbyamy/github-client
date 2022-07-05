@@ -2,6 +2,7 @@
     <string name="app_name">GithubClient</string>
     <string name="retry">リトライ</string>
     <string name="hint_text_search_user">Githubのユーザーを検索</string>
+    <string name="empty_text_search_user">検索結果は0件です</string>
 
     <string name="label_user_name">ユーザー名</string>
     <string name="label_full_name">フルネーム</string>
